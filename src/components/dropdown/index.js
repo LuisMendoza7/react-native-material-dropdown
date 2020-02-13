@@ -20,6 +20,7 @@ import styles from './styles';
 
 export default class Dropdown extends PureComponent {
   static defaultProps = {
+    separatorEnabled: false,
     hitSlop: { top: 6, right: 4, bottom: 6, left: 4 },
 
     disabled: false,
@@ -81,6 +82,7 @@ export default class Dropdown extends PureComponent {
   static propTypes = {
     ...TouchableWithoutFeedback.propTypes,
 
+    separatorEnabled: PropTypes.bool,
     disabled: PropTypes.bool,
 
     value: PropTypes.oneOfType([
@@ -149,6 +151,8 @@ export default class Dropdown extends PureComponent {
     containerStyle: (ViewPropTypes || View.propTypes).style,
     overlayStyle: (ViewPropTypes || View.propTypes).style,
     pickerStyle: (ViewPropTypes || View.propTypes).style,
+    separatorStyle: (ViewPropTypes || View.propTypes).style,
+    scrollContainerStyle: PropTypes.object,
 
     supportedOrientations: PropTypes.arrayOf(PropTypes.string),
 
@@ -563,6 +567,7 @@ export default class Dropdown extends PureComponent {
   }
 
   renderItem({ item, index }) {
+    const { separatorEnabled } = this.props
     if (null == item) {
       return null;
     }
@@ -583,7 +588,18 @@ export default class Dropdown extends PureComponent {
       rippleOpacity,
       rippleDuration,
       shadeOpacity,
+      separatorStyle
     } = this.props;
+
+    let value = valueExtractor(item, index);
+    let label = labelExtractor(item, index);
+    if ((value === 'separator') && separatorEnabled) {
+      return (
+        <View
+          style={separatorStyle}
+        />
+      )
+    }
 
     let props = propsExtractor(item, index);
 
@@ -601,9 +617,6 @@ export default class Dropdown extends PureComponent {
 
         onPress: this.onSelect,
       };
-
-    let value = valueExtractor(item, index);
-    let label = labelExtractor(item, index);
 
     let title = null == label?
       value:
@@ -644,6 +657,7 @@ export default class Dropdown extends PureComponent {
       containerStyle,
       overlayStyle: overlayStyleOverrides,
       pickerStyle: pickerStyleOverrides,
+      scrollContainerStyle,
 
       rippleInsets,
       rippleOpacity,
@@ -751,11 +765,11 @@ export default class Dropdown extends PureComponent {
               <FlatList
                 ref={this.updateScrollRef}
                 data={data}
-                style={styles.scroll}
+                style={{...styles.scroll}}
                 renderItem={this.renderItem}
                 keyExtractor={this.keyExtractor}
                 scrollEnabled={visibleItemCount < itemCount}
-                contentContainerStyle={styles.scrollContainer}
+                contentContainerStyle={{...styles.scrollContainer, ...scrollContainerStyle }}
               />
             </View>
           </Animated.View>
